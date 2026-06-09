@@ -46,6 +46,355 @@
 }
 ```
 
+## Output Field Reference
+
+모든 명령의 top-level JSON은 다음 공통 키를 가집니다.
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `command` | string | 실행한 CLI 명령의 논리 이름입니다. 예: `market history`, `dart show`. |
+| `description` | string | 전체 결과가 무엇을 의미하는지 설명합니다. |
+| `fields` | array | 사람이 읽기 쉬운 필드 목록입니다. 각 항목은 `name`, `description`, `value`를 가집니다. |
+| `fields[].name` | string | 출력 필드 이름입니다. |
+| `fields[].description` | string | 해당 필드의 의미입니다. CLI에서 key 의미를 해석할 때 이 값을 우선 사용합니다. |
+| `fields[].value` | any | 실제 값입니다. 원본 API 숫자 문자열은 정밀도 보존을 위해 문자열일 수 있습니다. |
+| `raw` | any/null | 원본 API 응답 또는 명령별 상세 payload입니다. 재처리/디버깅/AI 분석용입니다. |
+
+오류 출력의 `fields`는 다음 고정 키를 사용합니다.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `status` | string | 항상 `error`입니다. |
+| `message` | string | 실패 원인 메시지입니다. |
+
+### Command Output Fields
+
+#### `version`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `name` | string | 프로그램 이름입니다. Cargo package name과 같습니다. |
+| `version` | string | 현재 실행 중인 openstock 버전입니다. |
+
+#### `api list`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `count` | number | 등록된 증권사 API 구현체 개수입니다. |
+| `apis` | array | 증권사별 metadata, 인증 요구사항, 지원 명령, 입출력 계약, 부작용 정보를 담은 catalog입니다. |
+
+`apis[]` 주요 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `id` | string | 증권사 API 식별자입니다. 예: `KIS`. |
+| `name` | string | 증권사 표시명입니다. |
+| `description` | string | 증권사 API 설명입니다. |
+| `credential_requirements` | array | 필요한 환경변수와 사용처입니다. |
+| `capabilities` | array | CLI 명령별 목적, 입력, 출력 계약, 부작용 목록입니다. |
+
+#### `api login`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 로그인 대상 증권사 API입니다. 현재 `KIS`입니다. |
+| `status` | string | 로그인 처리 결과입니다. 성공 시 `success`입니다. |
+| `force` | boolean | 기존 유효 토큰을 무시하고 새 토큰 발급을 시도했는지 여부입니다. |
+| `credential_source` | object | `appkey`, `appsecret`을 CLI 인자에서 읽었는지 `.env`에서 읽었는지 나타냅니다. |
+| `token_storage` | object | 토큰과 만료시각이 저장되는 파일과 env key입니다. |
+| `side_effect` | string | 명령 부작용입니다. `writes_auth_state`이면 `.env` 인증 상태를 쓸 수 있습니다. |
+
+#### `api call`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 호출에 사용한 증권사 API입니다. |
+| `endpoint` | string | 호출한 KIS API 경로 또는 전체 URL입니다. |
+| `params` | array | 요청 파라미터 목록입니다. 각 항목은 `name`, `value`, `transport`, `description`을 가집니다. |
+| `request_semantics` | object | HTTP method, 인증 방식, `tr_id` 처리 방식, 부작용 위험을 설명합니다. |
+| `response` | object/array/string | 파싱된 API 응답 값입니다. |
+| `response_semantics` | array | 응답 top-level key의 의미와 값 타입 설명입니다. |
+
+#### `search`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `provider` | string | 검색 데이터 제공자입니다. 현재 `NAVER`입니다. |
+| `query` | string | 사용자가 입력한 검색어입니다. |
+| `stocks` | array | 검색된 종목 후보 목록입니다. |
+
+`stocks[]` 주요 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `code` | string | 종목코드입니다. 국내 주식이면 보통 6자리 KRX 코드입니다. |
+| `name` | string | 종목명입니다. |
+| `market` | string | Naver가 반환한 시장 표시명입니다. |
+| `market_code` | string | Naver가 반환한 시장 코드입니다. 없으면 빈 문자열일 수 있습니다. |
+| `nation_code` | string | 국가 코드입니다. 없으면 빈 문자열일 수 있습니다. |
+| `category` | string | 종목 카테고리입니다. 없으면 빈 문자열일 수 있습니다. |
+| `reuters_code` | string | Reuters style code입니다. 없으면 빈 문자열일 수 있습니다. |
+| `url` | string | Naver 모바일 종목 페이지 URL입니다. |
+
+#### `universe sync`, `universe status`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `source` | string | universe 원천입니다. 현재 `KIND`입니다. |
+| `source_url` | string | 원천 데이터 다운로드 URL입니다. |
+| `cache_date` | string | 캐시 기준일입니다. `YYYY-MM-DD` 형식입니다. |
+| `refreshed_at` | string | 캐시 갱신 시각입니다. UTC ISO-like 문자열입니다. |
+| `refreshed` | boolean | 이번 명령에서 새로 다운로드했는지 여부입니다. |
+| `stock_count` | number | 캐시에 저장된 전체 종목 수입니다. |
+| `counts_by_market` | object | 시장별 종목 수입니다. 예: `KOSPI`, `KOSDAQ`, `KONEX`. |
+
+#### `universe list`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `source` | string | universe 원천입니다. |
+| `cache_date` | string | 사용한 universe 캐시 기준일입니다. |
+| `total_count` | number | 필터 적용 전 전체 종목 수입니다. |
+| `filtered_count` | number | `--market`, `--kind` 필터 적용 후 종목 수입니다. |
+| `offset` | number | 반환 시작 위치입니다. |
+| `limit` | number | 최대 반환 종목 수입니다. |
+| `stocks` | array | 반환된 종목 목록입니다. 구조는 [Stock Schema](#stock-schema)를 따릅니다. |
+
+#### `universe chunks`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `source` | string | universe 원천입니다. |
+| `cache_date` | string | 사용한 universe 캐시 기준일입니다. |
+| `filtered_count` | number | chunk 생성 대상 종목 수입니다. |
+| `chunk_size` | number | chunk당 최대 종목 수입니다. |
+| `chunk_count` | number | 생성된 chunk 개수입니다. |
+| `chunks` | array | scan 가능한 chunk 목록입니다. |
+
+`chunks[]` 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `chunk_id` | string | chunk 식별자입니다. 시장, 종목 유형, index를 포함합니다. |
+| `index` | number | 같은 시장/종류 그룹 안의 1부터 시작하는 chunk 번호입니다. |
+| `size` | number | chunk 생성 기준 크기입니다. |
+| `count` | number | 이 chunk에 포함된 실제 종목 수입니다. |
+| `start_symbol` | string/null | chunk 첫 종목코드입니다. |
+| `end_symbol` | string/null | chunk 마지막 종목코드입니다. |
+| `market` | string | chunk 시장입니다. |
+| `kind` | string | chunk 종목 유형입니다. |
+
+#### `universe validate`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `valid` | boolean | 전체 검증 통과 여부입니다. |
+| `stock_count` | number | 검증 대상 전체 종목 수입니다. |
+| `counts_by_market` | object | 시장별 종목 수입니다. |
+| `checks` | array | 개별 검증 항목 결과입니다. |
+| `errors` | array | 실패한 검증 항목 설명입니다. |
+
+`checks[]` 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `name` | string | 검증 항목 이름입니다. |
+| `description` | string | 검증 항목 의미입니다. |
+| `valid` | boolean | 해당 항목 통과 여부입니다. |
+| `expected` | any | 기대 조건입니다. |
+| `actual` | any | 실제 값입니다. |
+
+#### `market`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 조회에 사용한 증권사 API입니다. |
+| `symbol` | string | 조회한 종목코드입니다. |
+| `price` | object | KIS 현재가/호가/시세/투자주의 관련 값입니다. |
+| `company` | object | KIS 종목 및 기업 기본 정보입니다. |
+
+`price`와 `company`는 KIS 원본 field name을 보존합니다. 자세한 원본은 `raw.price`, `raw.company`를 봅니다.
+
+#### `market history`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 조회에 사용한 증권사 API입니다. |
+| `symbol` | string | 조회한 종목코드입니다. |
+| `period` | string | 봉 단위입니다. `D`, `W`, `M`, `Y` 중 하나입니다. |
+| `date_range` | object | 요청 기간입니다. `from`, `to`를 포함합니다. |
+| `adjusted` | boolean | 수정주가 조회 여부입니다. `false`이면 원주가 조회입니다. |
+| `count` | number | 조회된 가격 봉 개수입니다. |
+| `candles` | array | 날짜 오름차순 OHLCV 배열입니다. |
+| `summary` | object | KIS가 반환한 종목 요약 정보입니다. |
+
+`candles[]` 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `date` | string | 거래일입니다. `YYYYMMDD` 형식입니다. |
+| `open` | string | 시가입니다. |
+| `high` | string | 고가입니다. |
+| `low` | string | 저가입니다. |
+| `close` | string | 종가입니다. |
+| `volume` | string | 누적 거래량입니다. |
+| `trading_value` | string | 누적 거래대금입니다. |
+| `change` | string | 전일 대비 가격 변화입니다. |
+| `change_sign` | string | KIS 전일 대비 부호 코드입니다. |
+| `change_rate` | string | 전일 대비율입니다. KIS 응답에 없으면 빈 문자열일 수 있습니다. |
+
+#### `dart sync`, `dart status`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `source` | string | 공시정보 원천입니다. 현재 `OpenDART`입니다. |
+| `cache_date` | string | 캐시 기준일입니다. |
+| `refreshed_at` | string | 캐시 갱신 시각입니다. |
+| `refreshed` | boolean | 이번 명령에서 새로 다운로드했는지 여부입니다. |
+| `total_count` | number | OpenDART 고유번호 전체 항목 수입니다. |
+| `listed_count` | number | `stock_code`가 존재하는 상장사 매핑 수입니다. |
+
+#### `dart corp`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `stock_code` | string | KRX 종목코드입니다. |
+| `corp_code` | string | OpenDART 공시 API에서 사용하는 8자리 고유번호입니다. |
+| `corp_name` | string | OpenDART에 등록된 회사명입니다. |
+| `modify_date` | string | OpenDART 고유번호 정보의 최근 변경일자입니다. |
+
+#### `dart disclosures`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `corp_code` | string/null | 조회에 사용한 OpenDART 고유번호입니다. 없으면 전체 공시 조회입니다. |
+| `from` | string/null | 검색 시작일입니다. `YYYYMMDD` 형식입니다. |
+| `to` | string/null | 검색 종료일입니다. `YYYYMMDD` 형식입니다. |
+| `page` | object | 페이지 정보입니다. `page_no`, `page_count`, `total_count`, `total_page`를 포함합니다. |
+| `resolved` | object | 종목코드를 입력한 경우 DART 고유번호로 변환한 정보입니다. |
+| `disclosures` | array | 조회된 공시 목록입니다. |
+
+`disclosures[]` 주요 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `corp_cls` | string | 법인구분입니다. `Y` 유가, `K` 코스닥, `N` 코넥스, `E` 기타입니다. |
+| `corp_code` | string | OpenDART 고유번호입니다. |
+| `corp_name` | string | 회사명입니다. |
+| `stock_code` | string | 종목코드입니다. |
+| `rcept_no` | string | 공시 접수번호입니다. `dart document` 입력값입니다. |
+| `report_nm` | string | 공시 보고서명입니다. |
+| `rcept_dt` | string | 공시 접수일입니다. `YYYYMMDD` 형식입니다. |
+| `flr_nm` | string | 제출인명입니다. |
+| `rm` | string | OpenDART 비고 코드입니다. |
+
+#### `dart document`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `rcept_no` | string | DART 공시 접수번호입니다. |
+| `source` | string | 공시서류 원본파일 제공 원천입니다. |
+| `viewer_url` | string | 브라우저에서 확인 가능한 DART 공시 뷰어 URL입니다. |
+| `cached` | boolean | 로컬 ZIP 캐시를 재사용했는지 여부입니다. |
+| `zip_path` | string | 로컬에 저장된 공시서류 ZIP 캐시 경로입니다. |
+| `zip_bytes` | number | ZIP 파일 크기입니다. |
+| `files` | array | ZIP 내부 파일 목록과 추출 텍스트 길이입니다. |
+| `text` | string | XML tag/style/script를 제거한 공시 본문 텍스트입니다. |
+| `text_chars` | number | 출력된 본문 텍스트 글자 수입니다. |
+| `truncated` | boolean | `--max-chars` 제한으로 본문이 잘렸는지 여부입니다. |
+
+`files[]` 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `name` | string | ZIP 내부 파일명입니다. |
+| `bytes` | number | ZIP 내부 원본 파일 크기입니다. |
+| `text_chars` | number | 해당 파일에서 추출한 텍스트 글자 수입니다. |
+
+#### `dart show`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `symbol` | string | 조회한 KRX 종목코드입니다. |
+| `resolved` | object | 종목코드를 OpenDART 고유번호로 변환한 정보입니다. |
+| `date_range` | object | 공시목록 검색 기간입니다. null이면 OpenDART 기본 검색 범위입니다. |
+| `selected_index` | number | 원문을 조회한 공시목록 항목 번호입니다. 1부터 시작합니다. |
+| `selected_disclosure` | object | 원문 조회 대상으로 선택된 공시 항목입니다. |
+| `disclosures` | array | 조회된 공시목록입니다. 다른 항목은 `--index`로 선택합니다. |
+| `document` | object | 선택된 공시의 원문 ZIP 캐시 정보와 추출 본문입니다. 구조는 `dart document`와 같습니다. |
+
+#### `account status`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 조회에 사용한 증권사 API입니다. |
+| `account` | string | 조회한 계좌번호입니다. |
+| `balance` | array | KIS 잔고/평가금/예수금 요약 목록입니다. |
+| `holdings` | array | 보유종목 상세 목록입니다. |
+
+`balance`와 `holdings`는 KIS 원본 field name을 보존합니다. 전체 원본은 `raw`를 봅니다.
+
+#### `order buy`, `order sell`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 주문에 사용한 증권사 API입니다. |
+| `side` | string | 주문 방향입니다. `buy` 또는 `sell`입니다. |
+| `symbol` | string | 주문한 종목코드입니다. |
+| `qty` | number | 주문 수량입니다. |
+| `order_type` | string | 주문 유형입니다. `limit` 또는 `market`입니다. |
+| `price` | number/null | 지정가 주문 가격입니다. 시장가 주문이면 null입니다. |
+| `order` | object | 증권사에서 반환한 주문 접수 정보입니다. |
+
+#### `order status`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `broker` | string | 조회에 사용한 증권사 API입니다. |
+| `account` | string | 조회한 계좌번호입니다. |
+| `order_no` | string/null | 조회 대상으로 지정한 주문번호입니다. 없으면 기간 내 전체 주문입니다. |
+| `orders` | array | 주문 및 체결 상세 목록입니다. |
+| `summary` | object | 주문 조회 요약 정보입니다. |
+
+#### `cache status`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `root` | string | 캐시 루트 디렉터리입니다. |
+| `exists` | boolean | 캐시 루트 디렉터리 존재 여부입니다. |
+| `total_files` | number | 캐시 파일 총 개수입니다. |
+| `total_bytes` | number | 캐시 총 용량입니다. bytes 단위입니다. |
+| `namespaces` | array | 최상위 namespace별 파일 수와 용량입니다. |
+
+`namespaces[]` 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `namespace` | string | `.openstock` 아래 최상위 디렉터리 이름입니다. 예: `universe`, `opendart`. |
+| `files` | number | namespace 안의 파일 수입니다. |
+| `bytes` | number | namespace 안의 총 파일 크기입니다. |
+
+#### `cache prune`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `dry_run` | boolean | 실제 삭제 없이 삭제 예정 항목만 계산했는지 여부입니다. |
+| `deleted_files` | number | 삭제했거나 dry-run에서 삭제 예정인 파일 수입니다. |
+| `deleted_bytes` | number | 삭제했거나 dry-run에서 삭제 예정인 용량입니다. bytes 단위입니다. |
+| `reports` | array | namespace별 보존 정책과 정리 결과입니다. |
+
+`reports[]` 구조:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `policy` | object | 적용한 보존 정책입니다. namespace, directory, max file/byte limit, protected files를 포함합니다. |
+| `dry_run` | boolean | 이 report가 dry-run인지 여부입니다. |
+| `deleted_files` | number | 해당 namespace에서 삭제했거나 삭제 예정인 파일 수입니다. |
+| `deleted_bytes` | number | 해당 namespace에서 삭제했거나 삭제 예정인 용량입니다. |
+| `retained_snapshot_files` | number | 보존된 snapshot 파일 수입니다. |
+| `retained_snapshot_bytes` | number | 보존된 snapshot 파일 총 용량입니다. |
+| `deleted_paths` | array | 삭제했거나 삭제 예정인 파일 경로 목록입니다. |
+
 ## Environment Variables
 
 `.env` 파일에서 읽고, 일부 값은 명령 실행 중 갱신됩니다.
