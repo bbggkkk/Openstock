@@ -11,7 +11,7 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
-if grep -q 'replace-with-repository-runner-token' "$ENV_FILE"; then
+if grep -q 'replace-with-.*-runner-token' "$ENV_FILE"; then
   echo "missing GITEA_RUNNER_REGISTRATION_TOKEN in $ENV_FILE" >&2
   exit 1
 fi
@@ -21,6 +21,6 @@ docker compose up -d
 docker compose ps
 
 echo
-echo "If logs repeat 'permission_denied: 403 Forbidden', refresh the repository runner registration token in Gitea and update:"
+echo "If logs repeat 'permission_denied: 403 Forbidden', refresh the instance runner registration token in Gitea and update:"
 echo "$ENV_FILE"
 echo "Then restart with: docker compose down && docker compose up -d"
