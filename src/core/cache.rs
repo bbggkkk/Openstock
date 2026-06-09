@@ -4,8 +4,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-const CACHE_ROOT: &str = ".openstock";
-
 #[derive(Debug, Clone, Serialize)]
 pub struct CacheStatus {
     pub root: String,
@@ -51,10 +49,11 @@ struct SnapshotFile {
 }
 
 pub fn status() -> Result<CacheStatus, String> {
-    let root = Path::new(CACHE_ROOT);
+    let root = crate::core::paths::cache_dir();
+    let root = root.as_path();
     if !root.exists() {
         return Ok(CacheStatus {
-            root: CACHE_ROOT.to_string(),
+            root: root.display().to_string(),
             exists: false,
             total_files: 0,
             total_bytes: 0,
@@ -74,7 +73,7 @@ pub fn status() -> Result<CacheStatus, String> {
     )?;
 
     Ok(CacheStatus {
-        root: CACHE_ROOT.to_string(),
+        root: root.display().to_string(),
         exists: true,
         total_files,
         total_bytes,

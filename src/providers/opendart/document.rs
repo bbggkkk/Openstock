@@ -6,7 +6,6 @@ use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 
 const OPENDART_DOCUMENT_URL: &str = "https://opendart.fss.or.kr/api/document.xml";
-const CACHE_DIR: &str = ".openstock/opendart/documents";
 const DOCUMENT_RETENTION_FILES: usize = 100;
 const DOCUMENT_RETENTION_BYTES: u64 = 200 * 1024 * 1024;
 
@@ -302,15 +301,20 @@ fn cache_path(rcept_no: &str) -> PathBuf {
 }
 
 fn cache_dir() -> PathBuf {
-    PathBuf::from(CACHE_DIR)
+    crate::core::paths::cache_namespace("opendart/documents")
 }
 
 fn api_key() -> Result<String, String> {
-    dotenv::read_env(Path::new(".env"))
+    dotenv::read_env(&crate::core::paths::env_file())
         .get("OPENDART_API_KEY")
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
-        .ok_or("OPENDART_API_KEY가 .env에 없습니다.".to_string())
+        .ok_or_else(|| {
+            format!(
+                "OPENDART_API_KEY가 설정 파일에 없습니다: {}",
+                crate::core::paths::env_file().display()
+            )
+        })
 }
 
 fn validate_rcept_no(value: &str) -> Result<(), String> {

@@ -17,7 +17,7 @@ impl TraderBase {
 
 /// 증권사별 로그인에 필요한 인자들의 공통 트레이트
 pub trait LoginArguments {
-    /// .env 파일에 저장할 토큰 키 이름 (예: "KIS_ACCESS_TOKEN")
+    /// 설정 파일에 저장할 토큰 키 이름 (예: "KIS_ACCESS_TOKEN")
     fn token_env_key(&self) -> &'static str;
 
     /// 구체적인 타입으로 다운캐스팅하기 위한 Any 변환

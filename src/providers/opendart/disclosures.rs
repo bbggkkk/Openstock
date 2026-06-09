@@ -1,6 +1,5 @@
 use crate::core::dotenv;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 
 const OPENDART_LIST_URL: &str = "https://opendart.fss.or.kr/api/list.json";
 
@@ -54,11 +53,16 @@ pub fn list(query: &DisclosureQuery) -> Result<serde_json::Value, String> {
 }
 
 fn api_key() -> Result<String, String> {
-    dotenv::read_env(Path::new(".env"))
+    dotenv::read_env(&crate::core::paths::env_file())
         .get("OPENDART_API_KEY")
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
-        .ok_or("OPENDART_API_KEY가 .env에 없습니다.".to_string())
+        .ok_or_else(|| {
+            format!(
+                "OPENDART_API_KEY가 설정 파일에 없습니다: {}",
+                crate::core::paths::env_file().display()
+            )
+        })
 }
 
 fn validate_query(query: &DisclosureQuery) -> Result<(), String> {

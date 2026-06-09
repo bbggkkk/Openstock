@@ -2,7 +2,6 @@ use crate::apis::create_default_registry;
 use crate::apis::kis::{login::KisLoginArguments, KisApi};
 use crate::core::TraderApi;
 use clap::{Args, Subcommand};
-use std::path::Path;
 
 #[derive(Subcommand)]
 pub enum ApiCommands {
@@ -18,11 +17,11 @@ pub enum ApiCommands {
 
 #[derive(Args)]
 pub struct KisLoginCommand {
-    /// 한국투자증권 Open API 앱키 (.env의 KIS_APPKEY보다 우선)
+    /// 한국투자증권 Open API 앱키 (설정 파일의 KIS_APPKEY보다 우선)
     #[arg(long)]
     appkey: Option<String>,
 
-    /// 한국투자증권 Open API 앱시크릿 (.env의 KIS_APPSECRET보다 우선)
+    /// 한국투자증권 Open API 앱시크릿 (설정 파일의 KIS_APPSECRET보다 우선)
     #[arg(long)]
     appsecret: Option<String>,
 
@@ -71,7 +70,7 @@ pub fn handle_api(sub: &ApiCommands) {
             );
         }
         ApiCommands::Login(command) => {
-            let env = crate::core::dotenv::read_env(Path::new(".env"));
+            let env = crate::core::dotenv::read_env(&crate::core::paths::env_file());
 
             let appkey = command
                 .appkey
@@ -111,10 +110,10 @@ pub fn handle_api(sub: &ApiCommands) {
                             ),
                             crate::core::output::field(
                                 "credential_source",
-                                "appkey/appsecret 입력 출처. CLI 옵션이 있으면 우선 사용하고 없으면 .env의 KIS_APPKEY/KIS_APPSECRET을 사용한다.",
+                                "appkey/appsecret 입력 출처. CLI 옵션이 있으면 우선 사용하고 없으면 설정 파일의 KIS_APPKEY/KIS_APPSECRET을 사용한다.",
                                 serde_json::json!({
-                                    "appkey": if command.appkey.is_some() { "cli_argument" } else { ".env:KIS_APPKEY" },
-                                    "appsecret": if command.appsecret.is_some() { "cli_argument" } else { ".env:KIS_APPSECRET" },
+                                    "appkey": if command.appkey.is_some() { "cli_argument" } else { "config_file:KIS_APPKEY" },
+                                    "appsecret": if command.appsecret.is_some() { "cli_argument" } else { "config_file:KIS_APPSECRET" },
                                 }),
                             ),
                             crate::core::output::field(
@@ -122,13 +121,14 @@ pub fn handle_api(sub: &ApiCommands) {
                                 "발급 또는 재사용된 접근토큰이 저장되는 위치와 키",
                                 serde_json::json!({
                                     "file": ".env",
+                                    "path": crate::core::paths::env_file().display().to_string(),
                                     "access_token_key": "KIS_ACCESS_TOKEN",
                                     "expiration_key": "KIS_ACCESS_TOKEN_EXPIRED_AT",
                                 }),
                             ),
                             crate::core::output::field(
                                 "side_effect",
-                                "명령의 외부 부작용. 인증 토큰과 인증 정보를 .env에 저장할 수 있지만 금융 주문은 발생하지 않는다.",
+                                "명령의 외부 부작용. 인증 토큰과 인증 정보를 설정 파일에 저장할 수 있지만 금융 주문은 발생하지 않는다.",
                                 serde_json::json!("writes_auth_state"),
                             ),
                         ],
@@ -234,25 +234,25 @@ fn api_catalog(api: &dyn TraderApi) -> serde_json::Value {
                 "name": "KIS_APPKEY",
                 "description": "KIS Open API application key used for authentication and every broker API request.",
                 "required_for": ["api login", "api call", "account status", "market", "market history", "order buy", "order sell", "order status"],
-                "source": ".env or api login --appkey"
+                "source": "~/.config/openstock/.env or api login --appkey"
             },
             {
                 "name": "KIS_APPSECRET",
                 "description": "KIS Open API application secret used for authentication and every broker API request.",
                 "required_for": ["api login", "api call", "account status", "market", "market history", "order buy", "order sell", "order status"],
-                "source": ".env or api login --appsecret"
+                "source": "~/.config/openstock/.env or api login --appsecret"
             },
             {
                 "name": "KIS_ACCESS_TOKEN",
                 "description": "Bearer access token issued by api login. Read commands and order commands require it.",
                 "required_for": ["api call", "account status", "market", "market history", "order buy", "order sell", "order status"],
-                "source": ".env written by api login"
+                "source": "~/.config/openstock/.env written by api login"
             },
             {
                 "name": "KIS_ACCOUNT",
                 "description": "Live account identifier in CANO-ACNT_PRDT_CD format, for example 12345678-01. Required for account and order commands.",
                 "required_for": ["account status", "order buy", "order sell", "order status"],
-                "source": ".env"
+                "source": "~/.config/openstock/.env"
             }
         ],
         "capabilities": [
@@ -260,8 +260,8 @@ fn api_catalog(api: &dyn TraderApi) -> serde_json::Value {
                 "command": "api login",
                 "purpose": "Prepare authentication by issuing or reusing a live KIS access token.",
                 "inputs": [
-                    {"name": "--appkey", "required": false, "description": "Overrides .env KIS_APPKEY."},
-                    {"name": "--appsecret", "required": false, "description": "Overrides .env KIS_APPSECRET."},
+                    {"name": "--appkey", "required": false, "description": "Overrides configured KIS_APPKEY."},
+                    {"name": "--appsecret", "required": false, "description": "Overrides configured KIS_APPSECRET."},
                     {"name": "--force", "required": false, "description": "Issue a new token even if a valid token already exists."}
                 ],
                 "output_contract": "Explained JSON with broker, status, force, credential_source, token_storage, and side_effect fields.",

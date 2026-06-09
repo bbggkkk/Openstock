@@ -1,6 +1,5 @@
 use crate::core::{dotenv, LoginArguments};
 use std::collections::HashMap;
-use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const KIS_BASE_URL: &str = "https://openapi.koreainvestment.com:9443";
@@ -34,10 +33,10 @@ impl LoginArguments for KisLoginArguments {
     }
 }
 
-/// KIS 실전 REST 접근토큰을 발급하고 .env에 저장한다.
+/// KIS 실전 REST 접근토큰을 발급하고 설정 파일에 저장한다.
 pub fn login(args: &KisLoginArguments) -> Result<String, String> {
-    let env_path = Path::new(".env");
-    let env = dotenv::read_env(env_path);
+    let env_path = crate::core::paths::env_file();
+    let env = dotenv::read_env(&env_path);
     if !args.force {
         if let Some(access_token) = valid_access_token(&env) {
             return Ok(access_token.to_string());
@@ -99,16 +98,16 @@ pub fn login(args: &KisLoginArguments) -> Result<String, String> {
         .and_then(|value| value.as_u64())
         .unwrap_or(0);
 
-    dotenv::write_env(env_path, "KIS_APPKEY", &args.appkey)?;
-    dotenv::write_env(env_path, "KIS_APPSECRET", &args.appsecret)?;
-    dotenv::write_env(env_path, args.token_env_key(), &access_token)?;
-    dotenv::write_env(env_path, "KIS_TOKEN_TYPE", token_type)?;
+    dotenv::write_env(&env_path, "KIS_APPKEY", &args.appkey)?;
+    dotenv::write_env(&env_path, "KIS_APPSECRET", &args.appsecret)?;
+    dotenv::write_env(&env_path, args.token_env_key(), &access_token)?;
+    dotenv::write_env(&env_path, "KIS_TOKEN_TYPE", token_type)?;
     if !expires_at.is_empty() {
-        dotenv::write_env(env_path, KIS_ACCESS_TOKEN_EXPIRED_AT_KEY, expires_at)?;
+        dotenv::write_env(&env_path, KIS_ACCESS_TOKEN_EXPIRED_AT_KEY, expires_at)?;
     }
     if expires_in > 0 {
         dotenv::write_env(
-            env_path,
+            &env_path,
             "KIS_ACCESS_TOKEN_EXPIRES_IN",
             &expires_in.to_string(),
         )?;

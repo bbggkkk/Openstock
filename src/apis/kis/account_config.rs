@@ -1,5 +1,4 @@
 use crate::core::dotenv;
-use std::path::Path;
 
 pub(crate) struct AccountConfig {
     pub(crate) number: String,
@@ -13,7 +12,7 @@ impl AccountConfig {
 }
 
 pub(crate) fn read_account_config() -> Result<AccountConfig, String> {
-    let env = dotenv::read_env(Path::new(".env"));
+    let env = dotenv::read_env(&crate::core::paths::env_file());
 
     if let Some(account) = env
         .get("KIS_ACCOUNT")
@@ -38,7 +37,10 @@ pub(crate) fn read_account_config() -> Result<AccountConfig, String> {
         });
     }
 
-    Err("계좌 설정이 없습니다. .env에 KIS_ACCOUNT=12345678-01 또는 KIS_CANO/KIS_ACNT_PRDT_CD를 설정하세요.".to_string())
+    Err(format!(
+        "계좌 설정이 없습니다. {}에 KIS_ACCOUNT=12345678-01 또는 KIS_CANO/KIS_ACNT_PRDT_CD를 설정하세요.",
+        crate::core::paths::env_file().display()
+    ))
 }
 
 fn split_account(account: &str) -> (&str, &str) {

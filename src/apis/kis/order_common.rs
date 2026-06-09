@@ -2,7 +2,6 @@ use crate::apis::kis::KisApi;
 use crate::core::dotenv;
 use crate::core::TraderApi;
 use serde_json::json;
-use std::path::Path;
 
 const KIS_BASE_URL: &str = "https://openapi.koreainvestment.com:9443";
 const ORDER_CASH_ENDPOINT: &str = "/uapi/domestic-stock/v1/trading/order-cash";
@@ -72,17 +71,17 @@ pub(crate) fn order_cash(
 }
 
 fn post_order(api: &KisApi, tr_id: &str, body: &serde_json::Value) -> Result<String, String> {
-    let env = dotenv::read_env(Path::new(".env"));
+    let env = dotenv::read_env(&crate::core::paths::env_file());
     let token = api
         .token()
         .or_else(|| env.get("KIS_ACCESS_TOKEN").map(String::as_str))
         .ok_or("로그인이 필요합니다. `openstock api login`을 먼저 실행하세요.")?;
     let appkey = env
         .get("KIS_APPKEY")
-        .ok_or("KIS_APPKEY가 .env에 없습니다.")?;
+        .ok_or("KIS_APPKEY가 설정 파일에 없습니다.")?;
     let appsecret = env
         .get("KIS_APPSECRET")
-        .ok_or("KIS_APPSECRET가 .env에 없습니다.")?;
+        .ok_or("KIS_APPSECRET가 설정 파일에 없습니다.")?;
     let url = format!("{}{}", KIS_BASE_URL, ORDER_CASH_ENDPOINT);
 
     let response = crate::core::http::agent()

@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const OPENDART_CORP_CODE_URL: &str = "https://opendart.fss.or.kr/api/corpCode.xml";
-const CACHE_DIR: &str = ".openstock/opendart";
 const CORP_CODES_FILE: &str = "corp_codes.json";
 const META_FILE: &str = "corp_codes_meta.json";
 
@@ -116,11 +115,16 @@ pub fn find_by_stock_code<'a>(corps: &'a [DartCorpCode], symbol: &str) -> Option
 }
 
 fn api_key() -> Result<String, String> {
-    dotenv::read_env(Path::new(".env"))
+    dotenv::read_env(&crate::core::paths::env_file())
         .get("OPENDART_API_KEY")
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
-        .ok_or("OPENDART_API_KEY가 .env에 없습니다.".to_string())
+        .ok_or_else(|| {
+            format!(
+                "OPENDART_API_KEY가 설정 파일에 없습니다: {}",
+                crate::core::paths::env_file().display()
+            )
+        })
 }
 
 fn parse_corp_code_zip(bytes: &[u8]) -> Result<Vec<DartCorpCode>, String> {
@@ -249,7 +253,7 @@ fn read_json<T: for<'de> Deserialize<'de>>(path: &Path) -> Result<T, String> {
 }
 
 fn cache_dir() -> PathBuf {
-    PathBuf::from(CACHE_DIR)
+    crate::core::paths::cache_namespace("opendart")
 }
 
 fn current_utc_date_string() -> String {

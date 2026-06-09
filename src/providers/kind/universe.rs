@@ -11,7 +11,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 const KIND_UNIVERSE_URL: &str =
     "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13";
-const CACHE_DIR: &str = ".openstock/universe/kind";
 const LATEST_FILE: &str = "latest.json";
 const META_FILE: &str = "meta.json";
 const SNAPSHOT_RETENTION_FILES: usize = 7;
@@ -365,7 +364,7 @@ fn read_json<T: for<'de> Deserialize<'de>>(path: &Path) -> Result<T, String> {
 }
 
 fn cache_dir() -> PathBuf {
-    PathBuf::from(CACHE_DIR)
+    crate::core::paths::cache_namespace("universe/kind")
 }
 
 fn counts_by_market(stocks: &[Stock]) -> BTreeMap<String, usize> {

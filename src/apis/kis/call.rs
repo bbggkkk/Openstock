@@ -1,21 +1,20 @@
 use crate::apis::kis::KisApi;
 use crate::core::dotenv;
-use std::path::Path;
 
 const KIS_BASE_URL: &str = "https://openapi.koreainvestment.com:9443";
 
 pub fn call(api: &KisApi, endpoint: &str, params: &[(&str, &str)]) -> Result<String, String> {
-    let env = dotenv::read_env(Path::new(".env"));
+    let env = dotenv::read_env(&crate::core::paths::env_file());
     let token = api
         .token()
         .or_else(|| env.get("KIS_ACCESS_TOKEN").map(String::as_str))
         .ok_or("로그인이 필요합니다. `openstock api login`을 먼저 실행하세요.")?;
     let appkey = env
         .get("KIS_APPKEY")
-        .ok_or("KIS_APPKEY가 .env에 없습니다.")?;
+        .ok_or("KIS_APPKEY가 설정 파일에 없습니다.")?;
     let appsecret = env
         .get("KIS_APPSECRET")
-        .ok_or("KIS_APPSECRET가 .env에 없습니다.")?;
+        .ok_or("KIS_APPSECRET가 설정 파일에 없습니다.")?;
     let tr_id = params
         .iter()
         .find(|(key, _)| key.eq_ignore_ascii_case("tr_id"))

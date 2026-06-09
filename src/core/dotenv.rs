@@ -32,5 +32,8 @@ pub fn write_env(path: &Path, key: &str, value: &str) -> Result<(), String> {
     for (k, v) in &map {
         content.push_str(&format!("{}={}\n", k, v));
     }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!(".env 디렉터리 생성 실패: {}", e))?;
+    }
     fs::write(path, content).map_err(|e| format!(".env 쓰기 실패: {}", e))
 }
