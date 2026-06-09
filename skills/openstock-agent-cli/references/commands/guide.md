@@ -7,6 +7,7 @@ This directory mirrors the `openstock` CLI command depth for agent execution.
 | `openstock version` | `version/` |
 | `openstock update` | `update/` |
 | `openstock search` | `search/` |
+| `openstock score ...` | `score/` |
 | `openstock api ...` | `api/` |
 | `openstock account ...` | `account/` |
 | `openstock market ...` | `market/` |
@@ -20,6 +21,7 @@ Subcommands also have leaf folders matching CLI depth, for example:
 | CLI Depth | Folder |
 | --- | --- |
 | `openstock api login` | `api/login/` |
+| `openstock score set` | `score/set/` |
 | `openstock account status` | `account/status/` |
 | `openstock market history` | `market/history/` |
 | `openstock universe chunks` | `universe/chunks/` |

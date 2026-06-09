@@ -4,6 +4,7 @@ pub mod http;
 pub mod output;
 pub mod paths;
 pub mod registry;
+pub mod scores;
 pub mod stock;
 pub mod trader;
 

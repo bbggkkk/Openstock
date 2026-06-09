@@ -20,6 +20,10 @@ pub fn env_file() -> PathBuf {
     config_dir().join(".env")
 }
 
+pub fn score_file() -> PathBuf {
+    config_dir().join("scores.json")
+}
+
 pub fn cache_dir() -> PathBuf {
     config_dir().join("cache")
 }
@@ -48,5 +52,11 @@ mod tests {
     fn cache_dir_lives_under_config_dir() {
         let path = cache_namespace("universe/kind");
         assert!(path.ends_with("cache/universe/kind"));
+    }
+
+    #[test]
+    fn score_file_lives_under_config_dir() {
+        let path = score_file();
+        assert!(path.ends_with("scores.json"));
     }
 }

@@ -5,6 +5,7 @@ use commands::cache::CacheCommands;
 use commands::dart::DartCommands;
 use commands::market::MarketCommand;
 use commands::order::OrderCommands;
+use commands::score::ScoreCommands;
 use commands::universe::UniverseCommands;
 
 mod apis;
@@ -74,6 +75,12 @@ enum Commands {
         query: String,
     },
 
+    /// 종목 평가 점수 저장 및 조회
+    Score {
+        #[command(subcommand)]
+        sub: ScoreCommands,
+    },
+
     /// 종목 정보 및 기업정보 조회
     Market(MarketCommand),
 }
@@ -91,6 +98,7 @@ fn main() {
         Some(Commands::Order { sub }) => commands::handle_order(sub),
         Some(Commands::Universe { sub }) => commands::handle_universe(sub),
         Some(Commands::Search { query }) => commands::handle_search(query),
+        Some(Commands::Score { sub }) => commands::handle_score(sub),
         Some(Commands::Market(command)) => commands::handle_market(command),
         None => {
             println!(

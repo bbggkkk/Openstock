@@ -73,6 +73,7 @@ Commands are documented by CLI depth under `references/commands`.
 | `openstock version` | `references/commands/version/guide.md` |
 | `openstock update` | `references/commands/update/guide.md` |
 | `openstock search` | `references/commands/search/guide.md` |
+| `openstock score *` | `references/commands/score/guide.md` |
 | `openstock api *` | `references/commands/api/guide.md` |
 | `openstock account *` | `references/commands/account/guide.md` |
 | `openstock market *` | `references/commands/market/guide.md` |

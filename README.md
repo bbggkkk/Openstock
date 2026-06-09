@@ -268,6 +268,19 @@ docker compose logs --tail=120 openstock-runner
 | `reuters_code` | string | Reuters style code입니다. 없으면 빈 문자열일 수 있습니다. |
 | `url` | string | Naver 모바일 종목 페이지 URL입니다. |
 
+#### `score set`, `score get`, `score list`, `score delete`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `path` | string | 종목 평가 점수를 저장하는 파일 경로입니다. 기본값은 `~/.config/openstock/scores.json`입니다. |
+| `symbol` | string | 점수를 매긴 종목코드 또는 종목 ID입니다. 영문자는 대문자로 정규화됩니다. |
+| `score` | number | 종목 평가 점수입니다. 0은 최저, 100은 최고입니다. |
+| `updated_at_unix` | number | 점수를 저장하거나 갱신한 Unix timestamp(초)입니다. |
+| `count` | number | `score list`가 반환한 저장 점수 개수입니다. |
+| `scores` | array | `score list`가 반환한 점수 목록입니다. 점수 내림차순, 종목 ID 오름차순으로 정렬됩니다. |
+| `deleted` | boolean | `score delete`에서 저장된 점수가 실제로 삭제되었는지 여부입니다. |
+| `removed` | object/null | `score delete`에서 삭제된 기존 점수 기록입니다. |
+
 #### `universe sync`, `universe status`
 
 | Field | Type | Meaning |
@@ -566,6 +579,7 @@ cp -R .openstock/* ~/.config/openstock/cache/
 
 | Path | Writer | Reader | Retention | Description |
 | --- | --- | --- | --- | --- |
+| `~/.config/openstock/scores.json` | `score set`, `score delete` | `score get`, `score list` | protected | 종목 ID별 0~100 평가 점수와 갱신시각입니다. `.env`와 같은 설정 디렉터리에 저장됩니다. |
 | `~/.config/openstock/cache/universe/kind/latest.json` | `universe sync` | `universe status/list/chunks/validate` | protected | KIND 상장법인목록 최신 normalized stock list입니다. |
 | `~/.config/openstock/cache/universe/kind/meta.json` | `universe sync` | `universe status/*` | protected | universe cache metadata입니다. |
 | `~/.config/openstock/cache/universe/kind/YYYY-MM-DD.json` | `universe sync` | audit/manual use | max 7 files or 25MB | 날짜별 universe snapshot입니다. |
@@ -660,6 +674,54 @@ Naver 모바일 주식 검색 API로 종목 후보를 검색합니다.
 | Side effect | 없음 |
 
 `stocks` 항목은 가능한 경우 `code`, `name`, `market`, `market_code`, `nation_code`, `category`, `reuters_code`, `url`을 포함합니다.
+
+### `openstock score set <symbol> <score>`
+
+종목 ID에 0~100점 평가 점수를 저장하거나 갱신합니다.
+
+| Direction | Data |
+| --- | --- |
+| Input | `symbol`, `score` |
+| File read/write | `~/.config/openstock/scores.json` |
+| Output fields | `path`, `symbol`, `score`, `updated_at_unix` |
+| Raw | `null` |
+| Side effect | 종목 평가 점수 파일을 생성하거나 갱신합니다. |
+
+### `openstock score get <symbol>`
+
+종목 ID의 저장된 평가 점수를 조회합니다.
+
+| Direction | Data |
+| --- | --- |
+| Input | `symbol` |
+| File read | `~/.config/openstock/scores.json` |
+| Output fields | `path`, `symbol`, `score`, `updated_at_unix` |
+| Raw | `null` |
+| Side effect | 없음 |
+
+### `openstock score list`
+
+저장된 종목 평가 점수 목록을 점수 내림차순으로 조회합니다.
+
+| Direction | Data |
+| --- | --- |
+| Input | 없음 |
+| File read | `~/.config/openstock/scores.json` |
+| Output fields | `path`, `count`, `scores` |
+| Raw | `null` |
+| Side effect | 없음 |
+
+### `openstock score delete <symbol>`
+
+종목 ID의 저장된 평가 점수를 삭제합니다.
+
+| Direction | Data |
+| --- | --- |
+| Input | `symbol` |
+| File read/write | `~/.config/openstock/scores.json` |
+| Output fields | `path`, `symbol`, `deleted`, `removed` |
+| Raw | `null` |
+| Side effect | 저장된 점수가 있으면 해당 기록을 삭제합니다. |
 
 ### `openstock universe sync [--force]`
 
