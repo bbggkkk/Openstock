@@ -63,7 +63,10 @@ jobs:
               -H "Authorization: token $GITEA_TOKEN" \
               "$api/tags/$TAG_NAME")"
           fi
-          release_id="$(printf '%s' "$response" | sed -n 's/.*"id":[[:space:]]*\([0-9][0-9]*\).*/\1/p' | head -n 1)"
+          release_id="$(printf '%s' "$response" \
+            | tr ',' '\n' \
+            | sed -n 's/^[[:space:]]*{*"id":[[:space:]]*\([0-9][0-9]*\)$/\1/p' \
+            | head -n 1)"
           if [ -z "$release_id" ]; then
             echo "failed to parse release id from Gitea response" >&2
             printf '%s\n' "$response" >&2
