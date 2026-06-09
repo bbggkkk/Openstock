@@ -6,10 +6,14 @@ BIN_NAME="${OPENSTOCK_BIN_NAME:-openstock}"
 ARCHIVE_URL="${OPENSTOCK_ARCHIVE_URL:-https://git.hananakick.cc/Autotrade/openstock/archive/main.tar.gz}"
 SOURCE_DIR=""
 TMP_DIR=""
+TMP_TARGET=""
 
 cleanup() {
   if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then
     rm -rf "$TMP_DIR"
+  fi
+  if [ -n "$TMP_TARGET" ] && [ -e "$TMP_TARGET" ]; then
+    rm -f "$TMP_TARGET"
   fi
 }
 trap cleanup EXIT
@@ -53,8 +57,11 @@ mkdir -p "$INSTALL_DIR"
 
 cd "$SOURCE_DIR"
 cargo build --release
-cp "$SOURCE_DIR/target/release/openstock" "$INSTALL_DIR/$BIN_NAME"
-chmod 755 "$INSTALL_DIR/$BIN_NAME"
+TMP_TARGET="$INSTALL_DIR/.$BIN_NAME.tmp.$$"
+cp "$SOURCE_DIR/target/release/openstock" "$TMP_TARGET"
+chmod 755 "$TMP_TARGET"
+mv -f "$TMP_TARGET" "$INSTALL_DIR/$BIN_NAME"
+TMP_TARGET=""
 
 echo "installed: $INSTALL_DIR/$BIN_NAME"
 echo "config: ${OPENSTOCK_CONFIG_DIR:-$HOME/.config/openstock}"
