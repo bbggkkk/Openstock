@@ -91,7 +91,7 @@ jobs:
               | tr '{' '\n' \
               | grep "\"name\":\"$asset_name\"" \
               | sed -n 's/.*"id":[[:space:]]*\([0-9][0-9]*\).*/\1/p' \
-              | head -n 1)"
+              | head -n 1 || true)"
             if [ -n "$asset_id" ]; then
               curl -fsS -X DELETE "$upload_url/$asset_id" \
                 -H "Authorization: token $GITEA_TOKEN"
