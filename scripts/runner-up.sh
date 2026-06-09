@@ -19,3 +19,8 @@ fi
 cd "$RUNNER_DIR"
 docker compose up -d
 docker compose ps
+
+echo
+echo "If logs repeat 'permission_denied: 403 Forbidden', refresh the repository runner registration token in Gitea and update:"
+echo "$ENV_FILE"
+echo "Then restart with: docker compose down && docker compose up -d"

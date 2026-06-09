@@ -79,6 +79,21 @@ vi ops/gitea-runner/.env
 
 runner는 `/var/run/docker.sock`을 mount하므로 이 머신의 Docker 권한을 가진 신뢰 가능한 저장소에만 연결해야 합니다. `ops/gitea-runner/.env`와 `ops/gitea-runner/data/`는 registration token과 runner state를 포함할 수 있어 git에서 제외합니다.
 
+`Cannot ping the Gitea instance server`와 `permission_denied: 403 Forbidden`이 반복되면 runner 컨테이너는 실행됐지만 Gitea가 등록을 거부한 상태입니다. 다음 순서로 처리합니다.
+
+1. Gitea repository settings에서 Actions가 활성화되어 있는지 확인합니다.
+2. repository scope의 runner registration token을 새로 발급합니다.
+3. `ops/gitea-runner/.env`의 `GITEA_RUNNER_REGISTRATION_TOKEN` 값을 새 token으로 교체합니다.
+4. runner state를 초기화하고 재시작합니다.
+
+```bash
+cd ops/gitea-runner
+docker compose down
+rm -rf data
+docker compose up -d
+docker compose logs --tail=120 openstock-runner
+```
+
 ## Architecture
 
 | Layer | Path | Role |
