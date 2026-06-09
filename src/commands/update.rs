@@ -116,16 +116,15 @@ fn update(force: bool) -> Result<UpdateResult, String> {
          curl -fsSL {} -o \"$tmp/openstock.tar.gz\"\n\
          tar -xzf \"$tmp/openstock.tar.gz\" -C \"$tmp\"\n\
          test -x \"$tmp/openstock\"\n\
-         mkdir -p {}\n\
-         target={}\n\
-         tmp_target=\"{}/.openstock.tmp.$$\"\n\
+         install_dir={}\n\
+         mkdir -p \"$install_dir\"\n\
+         target=\"$install_dir/openstock\"\n\
+         tmp_target=\"$install_dir/.openstock.tmp.$$\"\n\
          cp \"$tmp/openstock\" \"$tmp_target\"\n\
          chmod 755 \"$tmp_target\"\n\
          mv -f \"$tmp_target\" \"$target\"\n\
          printf 'installed: %s\\n' \"$target\"\n",
         shell_quote(&asset.browser_download_url),
-        shell_quote(&install_dir.display().to_string()),
-        shell_quote(&install_dir.join("openstock").display().to_string()),
         shell_quote(&install_dir.display().to_string()),
     );
     let output = Command::new("sh")
