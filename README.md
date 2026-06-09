@@ -174,6 +174,15 @@ docker compose logs --tail=120 openstock-runner
 | `status` | string | 항상 `error`입니다. |
 | `message` | string | 실패 원인 메시지입니다. |
 
+## Agent CLI Skill
+
+에이전트는 별도 MCP 서버나 plugin wrapper 없이 `openstock` CLI를 직접 실행하는 전략을 사용합니다.
+
+| Document | Purpose |
+| --- | --- |
+| `skills/openstock-agent-cli/SKILL.md` | 에이전트가 따라야 할 실행 전략, 출력 해석 규칙, 주문 안전 규칙 |
+| `skills/openstock-agent-cli/references/commands/` | CLI depth별 명령 설명과 IO 계약 |
+
 ### Command Output Fields
 
 #### `version`
