@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: write-all
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: rust:1-bookworm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Package binary
+        run: |
+          set -eu
+          tag="${GITHUB_REF_NAME:-${GITEA_REF_NAME:-}}"
+          if [ -z "$tag" ]; then
+            tag="$(printf '%s' "${GITHUB_REF:-${GITEA_REF:-}}" | sed 's#refs/tags/##')"
+          fi
+          archive="openstock-${tag}-linux-x86_64.tar.gz"
+          mkdir -p dist
+          cp target/release/openstock dist/openstock
+          chmod 755 dist/openstock
+          tar -C dist -czf "$archive" openstock
+          sha256sum "$archive" > "$archive.sha256"
+          printf 'RELEASE_ARCHIVE=%s\n' "$archive" >> "$GITHUB_ENV"
+          printf 'RELEASE_SHA256=%s\n' "$archive.sha256" >> "$GITHUB_ENV"
+
+      - name: Create Gitea release
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          SERVER_URL: ${{ gitea.server_url }}
+          REPOSITORY: ${{ gitea.repository }}
+          TAG_NAME: ${{ gitea.ref_name }}
+        run: |
+          set -eu
+          api="${SERVER_URL%/}/api/v1/repos/$REPOSITORY/releases"
+          body="$(printf '{"tag_name":"%s","target_commitish":"main","name":"%s","body":"Automated release for %s","draft":false,"prerelease":false}' "$TAG_NAME" "$TAG_NAME" "$TAG_NAME")"
+          response_file="$(mktemp)"
+          status="$(curl -sS -o "$response_file" -w '%{http_code}' -X POST "$api" \
+            -H "Authorization: token $GITEA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$body")"
+          response="$(cat "$response_file")"
+          if [ "$status" != "201" ]; then
+            response="$(curl -fsS \
+              -H "Authorization: token $GITEA_TOKEN" \
+              "$api/tags/$TAG_NAME")"
+          fi
+          release_id="$(printf '%s' "$response" | sed -n 's/.*"id":[[:space:]]*\([0-9][0-9]*\).*/\1/p' | head -n 1)"
+          if [ -z "$release_id" ]; then
+            echo "failed to parse release id from Gitea response" >&2
+            printf '%s\n' "$response" >&2
+            exit 1
+          fi
+          printf 'RELEASE_ID=%s\n' "$release_id" >> "$GITHUB_ENV"
+
+      - name: Upload release assets
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          SERVER_URL: ${{ gitea.server_url }}
+          REPOSITORY: ${{ gitea.repository }}
+        run: |
+          set -eu
+          upload_url="${SERVER_URL%/}/api/v1/repos/$REPOSITORY/releases/$RELEASE_ID/assets"
+          curl -fsS -X POST "$upload_url?name=$RELEASE_ARCHIVE" \
+            -H "Authorization: token $GITEA_TOKEN" \
+            -F "attachment=@$RELEASE_ARCHIVE"
+          curl -fsS -X POST "$upload_url?name=$RELEASE_SHA256" \
+            -H "Authorization: token $GITEA_TOKEN" \
+            -F "attachment=@$RELEASE_SHA256"

@@ -38,6 +38,23 @@ curl -fsSL https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts
 
 삭제 스크립트는 설치된 바이너리만 제거하고 `~/.config/openstock`의 설정/캐시는 보존합니다.
 
+## Release
+
+Gitea Actions가 활성화된 저장소에서는 push 시 자동으로 CI가 실행됩니다. `main` branch push는 테스트와 release 빌드 검증만 수행하고, `v*` tag push는 Gitea Release를 만들고 Linux x86_64 바이너리를 asset으로 등록합니다.
+
+```bash
+git tag v0.1.0
+git push origin main v0.1.0
+```
+
+필요 조건:
+
+| Requirement | Meaning |
+| --- | --- |
+| Gitea Actions | repository settings에서 Actions가 활성화되어 있어야 합니다. |
+| act runner | `ubuntu-latest` job을 실행할 runner가 등록되어 있어야 합니다. |
+| release permission | workflow의 `${{ secrets.GITEA_TOKEN }}`가 release 생성/asset 업로드 권한을 가져야 합니다. |
+
 ## Architecture
 
 | Layer | Path | Role |
