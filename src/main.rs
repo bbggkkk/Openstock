@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use commands::account::AccountCommands;
 use commands::api::ApiCommands;
 use commands::cache::CacheCommands;
@@ -30,7 +30,7 @@ enum Commands {
     Version,
 
     /// 설치된 openstock 바이너리 업데이트
-    Update,
+    Update(UpdateCommand),
 
     /// 증권사 API 리스트 조회 및 API 설정
     Api {
@@ -83,7 +83,7 @@ fn main() {
 
     match &cli.command {
         Some(Commands::Version) => commands::handle_version(),
-        Some(Commands::Update) => commands::handle_update(),
+        Some(Commands::Update(command)) => commands::handle_update(command),
         Some(Commands::Api { sub }) => commands::handle_api(sub),
         Some(Commands::Dart { sub }) => commands::handle_dart(sub),
         Some(Commands::Account { sub }) => commands::handle_account(sub),
@@ -114,4 +114,11 @@ fn main() {
             );
         }
     }
+}
+
+#[derive(Args)]
+struct UpdateCommand {
+    /// 현재 버전과 같아도 최신 release asset으로 재설치
+    #[arg(long)]
+    force: bool,
 }

@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 set -eu
 
-SCRIPT_URL="${OPENSTOCK_INSTALL_SCRIPT_URL:-https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts/install.sh}"
+BIN_NAME="${OPENSTOCK_BIN_NAME:-openstock}"
 
-curl -fsSL "$SCRIPT_URL" | sh
+if ! command -v "$BIN_NAME" >/dev/null 2>&1; then
+  echo "$BIN_NAME is required for update. Install first with scripts/install.sh." >&2
+  exit 1
+fi
+
+"$BIN_NAME" update "$@"

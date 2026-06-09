@@ -50,15 +50,15 @@ openstock update
 curl -fsSL https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts/update.sh | sh
 ```
 
-`openstock update`는 현재 실행 중인 바이너리의 디렉터리를 `OPENSTOCK_INSTALL_DIR`로 사용해 설치 스크립트를 다시 실행합니다. 설치 위치를 직접 지정하려면 `OPENSTOCK_INSTALL_DIR=/path openstock update`를 사용합니다. 설치 스크립트 URL은 `OPENSTOCK_INSTALL_SCRIPT_URL`로 바꿀 수 있습니다.
+`openstock update`는 Gitea 최신 release를 조회하고, 현재 버전보다 최신이면 Linux x86_64 release asset을 내려받아 현재 실행 중인 바이너리의 디렉터리에 설치합니다. 설치 위치를 직접 지정하려면 `OPENSTOCK_INSTALL_DIR=/path openstock update`를 사용합니다. 같은 버전도 재설치하려면 `openstock update --force`를 사용합니다.
 
 ## Release
 
 Gitea Actions가 활성화된 저장소에서는 push 시 자동으로 CI가 실행됩니다. `main` branch push는 테스트와 release 빌드 검증만 수행하고, `v*` tag push는 Gitea Release를 만들고 Linux x86_64 바이너리를 asset으로 등록합니다.
 
 ```bash
-git tag v0.1.0
-git push origin main v0.1.0
+git tag v0.2.0
+git push origin main v0.2.0
 ```
 
 필요 조건:
@@ -187,11 +187,17 @@ docker compose logs --tail=120 openstock-runner
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `installer_url` | string | 업데이트에 사용한 원격 설치 스크립트 URL입니다. |
+| `release_api_url` | string | 최신 release 정보를 조회한 Gitea API URL입니다. |
+| `current_version` | string | 현재 실행 중인 openstock 버전입니다. |
+| `latest_version` | string | Gitea 최신 release tag에서 해석한 버전입니다. |
+| `release_tag` | string | Gitea 최신 release tag입니다. |
+| `release_url` | string | Gitea release 페이지 URL입니다. |
+| `asset_name` | string | 설치에 사용한 release asset 이름입니다. |
+| `asset_url` | string | 설치에 사용한 release asset 다운로드 URL입니다. |
 | `install_dir` | string | 업데이트 대상 바이너리를 설치한 디렉터리입니다. |
-| `status` | string | 업데이트 명령 실행 결과입니다. 성공 시 `updated`입니다. |
-| `stdout` | string | 설치 스크립트의 표준 출력입니다. |
-| `stderr` | string | 설치 스크립트의 표준 오류 출력입니다. |
+| `status` | string | 업데이트 명령 실행 결과입니다. `updated` 또는 `up_to_date`입니다. |
+| `stdout` | string | release asset 설치 스크립트의 표준 출력입니다. |
+| `stderr` | string | release asset 설치 스크립트의 표준 오류 출력입니다. |
 
 #### `api list`
 
@@ -580,16 +586,16 @@ openstock cache prune
 
 ### `openstock update`
 
-원격 설치 스크립트를 다시 실행해 현재 openstock 바이너리를 업데이트합니다.
+Gitea 최신 release asset을 내려받아 현재 openstock 바이너리를 업데이트합니다.
 
 | Direction | Data |
 | --- | --- |
-| Input | `OPENSTOCK_INSTALL_DIR`, `OPENSTOCK_INSTALL_SCRIPT_URL` 선택 지정 |
-| External IO | `GET https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts/install.sh`; install script가 source archive를 내려받을 수 있음 |
+| Input | `--force`; `OPENSTOCK_INSTALL_DIR`, `OPENSTOCK_RELEASE_API_URL`, `OPENSTOCK_RELEASE_ASSET_SUFFIX` 선택 지정 |
+| External IO | `GET https://git.hananakick.cc/api/v1/repos/Autotrade/openstock/releases/latest`; selected release asset download |
 | File write | 현재 실행 바이너리 디렉터리 또는 `OPENSTOCK_INSTALL_DIR`의 `openstock` 바이너리 |
-| Output fields | `installer_url`, `install_dir`, `status`, `stdout`, `stderr` |
+| Output fields | `release_api_url`, `current_version`, `latest_version`, `release_tag`, `release_url`, `asset_name`, `asset_url`, `install_dir`, `status`, `stdout`, `stderr` |
 | Raw | `null` |
-| Side effect | release build 후 설치된 바이너리를 교체합니다. `~/.config/openstock` 설정/캐시는 보존합니다. |
+| Side effect | 최신 release 버전이 현재 버전보다 크거나 `--force`이면 설치된 바이너리를 교체합니다. `~/.config/openstock` 설정/캐시는 보존합니다. |
 
 ### `openstock api list`
 
