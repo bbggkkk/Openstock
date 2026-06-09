@@ -233,19 +233,19 @@ fn api_catalog(api: &dyn TraderApi) -> serde_json::Value {
             {
                 "name": "KIS_APPKEY",
                 "description": "KIS Open API application key used for authentication and every broker API request.",
-                "required_for": ["api login", "api call", "account status", "market", "order buy", "order sell", "order status"],
+                "required_for": ["api login", "api call", "account status", "market", "market history", "order buy", "order sell", "order status"],
                 "source": ".env or api login --appkey"
             },
             {
                 "name": "KIS_APPSECRET",
                 "description": "KIS Open API application secret used for authentication and every broker API request.",
-                "required_for": ["api login", "api call", "account status", "market", "order buy", "order sell", "order status"],
+                "required_for": ["api login", "api call", "account status", "market", "market history", "order buy", "order sell", "order status"],
                 "source": ".env or api login --appsecret"
             },
             {
                 "name": "KIS_ACCESS_TOKEN",
                 "description": "Bearer access token issued by api login. Read commands and order commands require it.",
-                "required_for": ["api call", "account status", "market", "order buy", "order sell", "order status"],
+                "required_for": ["api call", "account status", "market", "market history", "order buy", "order sell", "order status"],
                 "source": ".env written by api login"
             },
             {
@@ -289,6 +289,19 @@ fn api_catalog(api: &dyn TraderApi) -> serde_json::Value {
                 "purpose": "Read current price and company/basic stock information for a domestic stock code.",
                 "inputs": [{"name": "symbol", "required": true, "description": "Six digit domestic stock code such as 005930."}],
                 "output_contract": "Explained JSON with broker, symbol, price, company, and raw KIS response.",
+                "side_effect": "none"
+            },
+            {
+                "command": "market history <symbol> --from YYYYMMDD --to YYYYMMDD --period D|W|M|Y [--raw-price]",
+                "purpose": "Read OHLCV price history for a domestic stock code. The normalized candles are sorted ascending by date for strategy and backtest use.",
+                "inputs": [
+                    {"name": "symbol", "required": true, "description": "Six digit domestic stock code such as 005930."},
+                    {"name": "--from", "required": true, "description": "Start date in YYYYMMDD."},
+                    {"name": "--to", "required": true, "description": "End date in YYYYMMDD."},
+                    {"name": "--period", "required": false, "description": "D daily, W weekly, M monthly, Y yearly. Defaults to D."},
+                    {"name": "--raw-price", "required": false, "description": "Use original prices. Without this flag the command requests adjusted prices."}
+                ],
+                "output_contract": "Explained JSON with broker, symbol, period, date_range, adjusted, count, candles, summary, and raw KIS response.",
                 "side_effect": "none"
             },
             {

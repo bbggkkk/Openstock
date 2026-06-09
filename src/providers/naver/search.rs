@@ -15,7 +15,8 @@ pub fn search(query: &str) -> Result<String, String> {
         percent_encode(query)
     );
 
-    let response = ureq::get(&url)
+    let response = crate::core::http::agent()
+        .get(&url)
         .header("User-Agent", "openstock/0.1")
         .call()
         .map_err(|err| format!("[Naver] 종목 검색 요청 실패: {}", err))?;

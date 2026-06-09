@@ -5,6 +5,7 @@ pub mod call;
 pub mod info;
 pub mod login;
 pub mod market;
+pub mod market_history;
 pub mod order_common;
 pub mod order_status;
 pub mod sell;
@@ -86,6 +87,17 @@ impl TraderApi for KisApi {
 
     fn market(&self, symbol: &str) -> Result<String, String> {
         market::market(self, symbol)
+    }
+
+    fn market_history(
+        &self,
+        symbol: &str,
+        start_date: &str,
+        end_date: &str,
+        period: &str,
+        adjusted: bool,
+    ) -> Result<String, String> {
+        market_history::market_history(self, symbol, start_date, end_date, period, adjusted)
     }
 
     fn info(&self) -> Vec<(&'static str, &'static str)> {

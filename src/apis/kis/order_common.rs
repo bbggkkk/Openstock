@@ -85,7 +85,8 @@ fn post_order(api: &KisApi, tr_id: &str, body: &serde_json::Value) -> Result<Str
         .ok_or("KIS_APPSECRET가 .env에 없습니다.")?;
     let url = format!("{}{}", KIS_BASE_URL, ORDER_CASH_ENDPOINT);
 
-    let response = ureq::post(&url)
+    let response = crate::core::http::agent()
+        .post(&url)
         .header("Content-Type", "application/json; charset=UTF-8")
         .header("authorization", &format!("Bearer {}", token))
         .header("appkey", appkey)

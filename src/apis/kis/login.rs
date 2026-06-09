@@ -53,7 +53,8 @@ pub fn login(args: &KisLoginArguments) -> Result<String, String> {
         "appsecret": args.appsecret,
     });
 
-    let response = ureq::post(&url)
+    let response = crate::core::http::agent()
+        .post(&url)
         .header("Content-Type", "application/json; charset=UTF-8")
         .send_json(&request_body)
         .map_err(|err| format!("[KIS] 접근토큰 발급 요청 실패: {}", err))?;

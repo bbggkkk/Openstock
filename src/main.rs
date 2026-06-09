@@ -1,7 +1,11 @@
 use clap::{Parser, Subcommand};
 use commands::account::AccountCommands;
 use commands::api::ApiCommands;
+use commands::cache::CacheCommands;
+use commands::dart::DartCommands;
+use commands::market::MarketCommand;
 use commands::order::OrderCommands;
+use commands::universe::UniverseCommands;
 
 mod apis;
 mod commands;
@@ -31,16 +35,34 @@ enum Commands {
         sub: ApiCommands,
     },
 
+    /// OpenDART 공시정보 조회
+    Dart {
+        #[command(subcommand)]
+        sub: DartCommands,
+    },
+
     /// 계좌 조회 및 관리
     Account {
         #[command(subcommand)]
         sub: AccountCommands,
     },
 
+    /// 로컬 캐시 상태 조회 및 용량 정리
+    Cache {
+        #[command(subcommand)]
+        sub: CacheCommands,
+    },
+
     /// 주문 실행 및 조회
     Order {
         #[command(subcommand)]
         sub: OrderCommands,
+    },
+
+    /// 종목 universe 캐시 구축 및 조회
+    Universe {
+        #[command(subcommand)]
+        sub: UniverseCommands,
     },
 
     /// 종목 검색
@@ -50,10 +72,7 @@ enum Commands {
     },
 
     /// 종목 정보 및 기업정보 조회
-    Market {
-        /// 종목코드
-        symbol: String,
-    },
+    Market(MarketCommand),
 }
 
 fn main() {
@@ -62,10 +81,13 @@ fn main() {
     match &cli.command {
         Some(Commands::Version) => commands::handle_version(),
         Some(Commands::Api { sub }) => commands::handle_api(sub),
+        Some(Commands::Dart { sub }) => commands::handle_dart(sub),
         Some(Commands::Account { sub }) => commands::handle_account(sub),
+        Some(Commands::Cache { sub }) => commands::handle_cache(sub),
         Some(Commands::Order { sub }) => commands::handle_order(sub),
+        Some(Commands::Universe { sub }) => commands::handle_universe(sub),
         Some(Commands::Search { query }) => commands::handle_search(query),
-        Some(Commands::Market { symbol }) => commands::handle_market(symbol),
+        Some(Commands::Market(command)) => commands::handle_market(command),
         None => {
             println!(
                 "{}",

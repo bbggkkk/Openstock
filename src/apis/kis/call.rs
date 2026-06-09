@@ -27,7 +27,8 @@ pub fn call(api: &KisApi, endpoint: &str, params: &[(&str, &str)]) -> Result<Str
         .collect::<Vec<_>>();
     let url = build_url(endpoint, &query_params);
 
-    let mut request = ureq::get(&url)
+    let mut request = crate::core::http::agent()
+        .get(&url)
         .header("Content-Type", "application/json; charset=UTF-8")
         .header("authorization", &format!("Bearer {}", token))
         .header("appkey", appkey)

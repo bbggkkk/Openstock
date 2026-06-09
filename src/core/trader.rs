@@ -82,6 +82,16 @@ pub trait TraderApi {
     /// 종목 시장 정보 조회
     fn market(&self, symbol: &str) -> Result<String, String>;
 
+    /// 종목 기간별 가격 히스토리 조회
+    fn market_history(
+        &self,
+        symbol: &str,
+        start_date: &str,
+        end_date: &str,
+        period: &str,
+        adjusted: bool,
+    ) -> Result<String, String>;
+
     /// 증권사 정보 (키-값 쌍)
     fn info(&self) -> Vec<(&'static str, &'static str)>;
 }
