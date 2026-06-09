@@ -6,6 +6,7 @@ pub mod market;
 pub mod order;
 pub mod search;
 pub mod universe;
+pub mod update;
 mod version;
 
 pub use account::handle_account;
@@ -16,4 +17,5 @@ pub use market::handle_market;
 pub use order::handle_order;
 pub use search::handle_search;
 pub use universe::handle_universe;
+pub use update::handle_update;
 pub use version::handle_version;

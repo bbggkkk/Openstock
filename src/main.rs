@@ -29,6 +29,9 @@ enum Commands {
     /// 애플리케이션 버젼 표시
     Version,
 
+    /// 설치된 openstock 바이너리 업데이트
+    Update,
+
     /// 증권사 API 리스트 조회 및 API 설정
     Api {
         #[command(subcommand)]
@@ -80,6 +83,7 @@ fn main() {
 
     match &cli.command {
         Some(Commands::Version) => commands::handle_version(),
+        Some(Commands::Update) => commands::handle_update(),
         Some(Commands::Api { sub }) => commands::handle_api(sub),
         Some(Commands::Dart { sub }) => commands::handle_dart(sub),
         Some(Commands::Account { sub }) => commands::handle_account(sub),

@@ -38,6 +38,20 @@ curl -fsSL https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts
 
 삭제 스크립트는 설치된 바이너리만 제거하고 `~/.config/openstock`의 설정/캐시는 보존합니다.
 
+업데이트:
+
+```bash
+openstock update
+```
+
+원라인 업데이트:
+
+```bash
+curl -fsSL https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts/update.sh | sh
+```
+
+`openstock update`는 현재 실행 중인 바이너리의 디렉터리를 `OPENSTOCK_INSTALL_DIR`로 사용해 설치 스크립트를 다시 실행합니다. 설치 위치를 직접 지정하려면 `OPENSTOCK_INSTALL_DIR=/path openstock update`를 사용합니다. 설치 스크립트 URL은 `OPENSTOCK_INSTALL_SCRIPT_URL`로 바꿀 수 있습니다.
+
 ## Release
 
 Gitea Actions가 활성화된 저장소에서는 push 시 자동으로 CI가 실행됩니다. `main` branch push는 테스트와 release 빌드 검증만 수행하고, `v*` tag push는 Gitea Release를 만들고 Linux x86_64 바이너리를 asset으로 등록합니다.
@@ -168,6 +182,16 @@ docker compose logs --tail=120 openstock-runner
 | --- | --- | --- |
 | `name` | string | 프로그램 이름입니다. Cargo package name과 같습니다. |
 | `version` | string | 현재 실행 중인 openstock 버전입니다. |
+
+#### `update`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `installer_url` | string | 업데이트에 사용한 원격 설치 스크립트 URL입니다. |
+| `install_dir` | string | 업데이트 대상 바이너리를 설치한 디렉터리입니다. |
+| `status` | string | 업데이트 명령 실행 결과입니다. 성공 시 `updated`입니다. |
+| `stdout` | string | 설치 스크립트의 표준 출력입니다. |
+| `stderr` | string | 설치 스크립트의 표준 오류 출력입니다. |
 
 #### `api list`
 
@@ -553,6 +577,19 @@ openstock cache prune
 | File IO | 없음 |
 | Output fields | `name`, `version` |
 | Side effect | 없음 |
+
+### `openstock update`
+
+원격 설치 스크립트를 다시 실행해 현재 openstock 바이너리를 업데이트합니다.
+
+| Direction | Data |
+| --- | --- |
+| Input | `OPENSTOCK_INSTALL_DIR`, `OPENSTOCK_INSTALL_SCRIPT_URL` 선택 지정 |
+| External IO | `GET https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts/install.sh`; install script가 source archive를 내려받을 수 있음 |
+| File write | 현재 실행 바이너리 디렉터리 또는 `OPENSTOCK_INSTALL_DIR`의 `openstock` 바이너리 |
+| Output fields | `installer_url`, `install_dir`, `status`, `stdout`, `stderr` |
+| Raw | `null` |
+| Side effect | release build 후 설치된 바이너리를 교체합니다. `~/.config/openstock` 설정/캐시는 보존합니다. |
 
 ### `openstock api list`
 

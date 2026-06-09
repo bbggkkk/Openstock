@@ -26,7 +26,6 @@ impl KisApi {
             token: None,
         }
     }
-
 }
 
 impl TraderApi for KisApi {
