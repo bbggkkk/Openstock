@@ -55,6 +55,30 @@ git push origin main v0.1.0
 | act runner | `ubuntu-latest` job을 실행할 runner가 등록되어 있어야 합니다. |
 | release permission | workflow의 `${{ secrets.GITEA_TOKEN }}`가 release 생성/asset 업로드 권한을 가져야 합니다. |
 
+### Runner
+
+Docker 기반 Gitea act runner 구성은 `ops/gitea-runner`에 있습니다. 등록 토큰은 Gitea repository settings의 Actions runner 화면에서 발급받아 로컬 `.env`에만 저장합니다.
+
+```bash
+cp ops/gitea-runner/.env.example ops/gitea-runner/.env
+vi ops/gitea-runner/.env
+./scripts/runner-up.sh
+```
+
+러너 상태와 로그:
+
+```bash
+./scripts/runner-logs.sh
+```
+
+중지:
+
+```bash
+./scripts/runner-down.sh
+```
+
+runner는 `/var/run/docker.sock`을 mount하므로 이 머신의 Docker 권한을 가진 신뢰 가능한 저장소에만 연결해야 합니다. `ops/gitea-runner/.env`와 `ops/gitea-runner/data/`는 registration token과 runner state를 포함할 수 있어 git에서 제외합니다.
+
 ## Architecture
 
 | Layer | Path | Role |

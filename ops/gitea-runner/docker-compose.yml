@@ -1,0 +1,13 @@
+services:
+  openstock-runner:
+    image: docker.io/gitea/act_runner:latest
+    container_name: openstock-gitea-runner
+    restart: unless-stopped
+    environment:
+      GITEA_INSTANCE_URL: ${GITEA_INSTANCE_URL}
+      GITEA_RUNNER_REGISTRATION_TOKEN: ${GITEA_RUNNER_REGISTRATION_TOKEN}
+      GITEA_RUNNER_NAME: ${GITEA_RUNNER_NAME:-openstock-runner}
+      GITEA_RUNNER_LABELS: ${GITEA_RUNNER_LABELS:-ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest}
+    volumes:
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock

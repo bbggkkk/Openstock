@@ -1,3 +1,5 @@
 /target/
 .env
 .openstock/
+ops/gitea-runner/.env
+ops/gitea-runner/data/
