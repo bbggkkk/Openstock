@@ -171,10 +171,7 @@ pub fn handle_universe(sub: &UniverseCommands) {
                                     serde_json::json!(page),
                                 ),
                             ],
-                            serde_json::json!({
-                                "meta": snapshot.meta,
-                                "stocks": page,
-                            }),
+                            serde_json::Value::Null,
                         )
                     );
                 }
@@ -237,10 +234,7 @@ pub fn handle_universe(sub: &UniverseCommands) {
                                     serde_json::json!(chunks),
                                 ),
                             ],
-                            serde_json::json!({
-                                "meta": snapshot.meta,
-                                "chunks": chunks,
-                            }),
+                            serde_json::Value::Null,
                         )
                     );
                 }
@@ -296,10 +290,7 @@ pub fn handle_universe(sub: &UniverseCommands) {
                                 serde_json::json!(report.errors),
                             ),
                         ],
-                        serde_json::json!({
-                            "meta": snapshot.meta,
-                            "report": report,
-                        }),
+                        serde_json::Value::Null,
                     )
                 ),
                 Err(err) => eprintln!(
@@ -362,7 +353,7 @@ fn print_snapshot(command: &str, description: &str, snapshot: &kind::universe::U
                     serde_json::json!(snapshot.meta.counts_by_market),
                 ),
             ],
-            serde_json::json!(snapshot.meta),
+            serde_json::Value::Null,
         )
     );
 }

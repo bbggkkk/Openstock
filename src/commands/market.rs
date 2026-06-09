@@ -100,7 +100,7 @@ fn handle_market_overview(symbol: &str) {
                                 .unwrap_or_else(|| serde_json::json!({})),
                         ),
                     ],
-                    value,
+                    serde_json::Value::Null,
                 )
             );
         }
@@ -194,7 +194,7 @@ fn handle_market_history(command: &MarketHistoryCommand) {
                                 .unwrap_or_else(|| serde_json::json!({})),
                         ),
                     ],
-                    value,
+                    serde_json::Value::Null,
                 )
             );
         }

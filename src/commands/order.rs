@@ -145,7 +145,7 @@ fn print_order_result(command: &str, description: &str, json: &str) {
                         .unwrap_or_else(|| serde_json::json!({})),
                 ),
             ],
-            value,
+            serde_json::Value::Null,
         )
     );
 }
@@ -199,7 +199,7 @@ fn print_order_status_result(json: &str) {
                         .unwrap_or_else(|| serde_json::json!({})),
                 ),
             ],
-            value,
+            serde_json::Value::Null,
         )
     );
 }

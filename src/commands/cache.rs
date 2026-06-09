@@ -52,7 +52,7 @@ pub fn handle_cache(sub: &CacheCommands) {
                             serde_json::json!(status.namespaces),
                         ),
                     ],
-                    serde_json::json!(status),
+                    serde_json::Value::Null,
                 )
             ),
             Err(err) => eprintln!(
@@ -106,7 +106,7 @@ pub fn handle_cache(sub: &CacheCommands) {
                             serde_json::json!(reports),
                         ),
                     ],
-                    serde_json::json!(reports),
+                    serde_json::Value::Null,
                 )
             );
         }

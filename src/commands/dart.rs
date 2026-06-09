@@ -344,7 +344,7 @@ fn print_corp_snapshot(
                     serde_json::json!(snapshot.meta.listed_count),
                 ),
             ],
-            serde_json::json!(snapshot.meta),
+            serde_json::Value::Null,
         )
     );
 }
@@ -505,7 +505,7 @@ fn print_disclosures(
                 ),
                 crate::core::output::field("disclosures", "조회된 공시 목록", list),
             ],
-            value,
+            serde_json::Value::Null,
         )
     );
 }
@@ -568,7 +568,7 @@ fn print_document(value: document::DartDocument) {
                     serde_json::json!(value.truncated),
                 ),
             ],
-            serde_json::json!(value),
+            serde_json::Value::Null,
         )
     );
 }
@@ -630,13 +630,7 @@ fn print_show(
                     serde_json::json!(document),
                 ),
             ],
-            serde_json::json!({
-                "query": query,
-                "resolved": resolved,
-                "selected_disclosure": selected,
-                "disclosures": disclosures_value,
-                "document": document,
-            }),
+            serde_json::Value::Null,
         )
     );
 }

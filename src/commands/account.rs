@@ -54,7 +54,7 @@ pub fn handle_account(sub: &AccountCommands) {
                                         .unwrap_or_else(|| serde_json::json!([])),
                                 ),
                             ],
-                            value,
+                            serde_json::Value::Null,
                         )
                     );
                 }

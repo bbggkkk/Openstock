@@ -35,7 +35,7 @@ pub fn handle_search(query: &str) {
                                 .unwrap_or_else(|| serde_json::json!([])),
                         ),
                     ],
-                    value,
+                    serde_json::Value::Null,
                 )
             );
         }
