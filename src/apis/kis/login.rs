@@ -116,6 +116,25 @@ pub fn login(args: &KisLoginArguments) -> Result<String, String> {
     Ok(access_token)
 }
 
+pub(crate) fn access_token_or_login() -> Result<String, String> {
+    let env_path = crate::core::paths::env_file();
+    let env = dotenv::read_env(&env_path);
+    if let Some(access_token) = valid_access_token(&env) {
+        return Ok(access_token.to_string());
+    }
+
+    let appkey = env
+        .get("KIS_APPKEY")
+        .ok_or("KIS_APPKEY가 설정 파일에 없습니다.")?
+        .to_string();
+    let appsecret = env
+        .get("KIS_APPSECRET")
+        .ok_or("KIS_APPSECRET가 설정 파일에 없습니다.")?
+        .to_string();
+
+    login(&KisLoginArguments::new(appkey, appsecret, true))
+}
+
 fn validate_credentials(args: &KisLoginArguments) -> Result<(), String> {
     if args.appkey.trim().is_empty() {
         return Err("[KIS] KIS_APPKEY가 비어 있습니다".to_string());
@@ -126,7 +145,7 @@ fn validate_credentials(args: &KisLoginArguments) -> Result<(), String> {
     Ok(())
 }
 
-fn valid_access_token(env: &HashMap<String, String>) -> Option<&str> {
+pub(crate) fn valid_access_token(env: &HashMap<String, String>) -> Option<&str> {
     let access_token = env.get("KIS_ACCESS_TOKEN")?;
     if access_token.trim().is_empty() {
         return None;

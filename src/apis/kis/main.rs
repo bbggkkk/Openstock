@@ -27,9 +27,6 @@ impl KisApi {
         }
     }
 
-    pub(crate) fn token(&self) -> Option<&str> {
-        self.token.as_deref()
-    }
 }
 
 impl TraderApi for KisApi {

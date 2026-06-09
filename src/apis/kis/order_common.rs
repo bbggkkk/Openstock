@@ -70,12 +70,9 @@ pub(crate) fn order_cash(
     .to_string())
 }
 
-fn post_order(api: &KisApi, tr_id: &str, body: &serde_json::Value) -> Result<String, String> {
+fn post_order(_api: &KisApi, tr_id: &str, body: &serde_json::Value) -> Result<String, String> {
     let env = dotenv::read_env(&crate::core::paths::env_file());
-    let token = api
-        .token()
-        .or_else(|| env.get("KIS_ACCESS_TOKEN").map(String::as_str))
-        .ok_or("로그인이 필요합니다. `openstock api login`을 먼저 실행하세요.")?;
+    let token = crate::apis::kis::login::access_token_or_login()?;
     let appkey = env
         .get("KIS_APPKEY")
         .ok_or("KIS_APPKEY가 설정 파일에 없습니다.")?;
@@ -87,7 +84,7 @@ fn post_order(api: &KisApi, tr_id: &str, body: &serde_json::Value) -> Result<Str
     let response = crate::core::http::agent()
         .post(&url)
         .header("Content-Type", "application/json; charset=UTF-8")
-        .header("authorization", &format!("Bearer {}", token))
+        .header("authorization", &format!("Bearer {}", token.as_str()))
         .header("appkey", appkey)
         .header("appsecret", appsecret)
         .header("tr_id", tr_id)

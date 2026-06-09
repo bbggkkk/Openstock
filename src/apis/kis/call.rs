@@ -3,12 +3,9 @@ use crate::core::dotenv;
 
 const KIS_BASE_URL: &str = "https://openapi.koreainvestment.com:9443";
 
-pub fn call(api: &KisApi, endpoint: &str, params: &[(&str, &str)]) -> Result<String, String> {
+pub fn call(_api: &KisApi, endpoint: &str, params: &[(&str, &str)]) -> Result<String, String> {
     let env = dotenv::read_env(&crate::core::paths::env_file());
-    let token = api
-        .token()
-        .or_else(|| env.get("KIS_ACCESS_TOKEN").map(String::as_str))
-        .ok_or("로그인이 필요합니다. `openstock api login`을 먼저 실행하세요.")?;
+    let token = crate::apis::kis::login::access_token_or_login()?;
     let appkey = env
         .get("KIS_APPKEY")
         .ok_or("KIS_APPKEY가 설정 파일에 없습니다.")?;
@@ -29,7 +26,7 @@ pub fn call(api: &KisApi, endpoint: &str, params: &[(&str, &str)]) -> Result<Str
     let mut request = crate::core::http::agent()
         .get(&url)
         .header("Content-Type", "application/json; charset=UTF-8")
-        .header("authorization", &format!("Bearer {}", token))
+        .header("authorization", &format!("Bearer {}", token.as_str()))
         .header("appkey", appkey)
         .header("appsecret", appsecret)
         .header("custtype", "P");
