@@ -57,8 +57,8 @@ curl -fsSL https://git.hananakick.cc/Autotrade/openstock/raw/branch/main/scripts
 Gitea Actions가 활성화된 저장소에서는 push 시 자동으로 CI가 실행됩니다. `main` branch push는 테스트와 release 빌드 검증만 수행하고, `v*` tag push는 Gitea Release를 만들고 Linux x86_64 바이너리를 asset으로 등록합니다.
 
 ```bash
-git tag v0.2.0
-git push origin main v0.2.0
+git tag v0.2.1
+git push origin main v0.2.1
 ```
 
 필요 조건:
